@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LevelController : MonoBehaviour
+public class GridZone : MonoBehaviour
 {
-    public GridController _GridController;
-    public LevelData[] levelDataSet;
+    private GameObject[] gridObjects;
+    private GridType[] gridTypes;
+    private Cube[] movables;
 
     // Start is called before the first frame update
     void Start()
@@ -16,14 +17,10 @@ public class LevelController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-    
+        
     }
 
-    public void getSwipe(SwipeData _data){
-
-    }
-
-    public void generateLevel(int _lvlNo, Texture2D[] _lvlDatas){
-
+    public void setSwipe(SwipeData _data){
+        
     }
 }

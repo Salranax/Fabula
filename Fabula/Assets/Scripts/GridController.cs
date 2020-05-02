@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class GridController : MonoBehaviour
 {
-    public GridType[] typeGrid;
-    
+    public GridZone[] gridZones = new GridZone[4];
+    private GridZone activeGrid;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -17,10 +18,10 @@ public class GridController : MonoBehaviour
     {
         
     }
+}
 
-    public enum GridType
-    {
-        wall,
-        empty
-    }
+enum GridType
+{
+    wall,
+    empty
 }
