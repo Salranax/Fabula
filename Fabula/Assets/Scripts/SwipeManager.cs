@@ -101,7 +101,7 @@ public class SwipeManager : MonoBehaviour
             StartPosition = fingerDownPosition,
             EndPosition = fingerUpPosition
         };
-        _LevelController.getSwipe(swipeData);
+        _LevelController.setSwipe(swipeData);
     }
 }
 

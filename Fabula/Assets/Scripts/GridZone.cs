@@ -6,7 +6,7 @@ public class GridZone : MonoBehaviour
 {
     private GameObject[] gridObjects;
     private GridType[] gridTypes;
-    private Cube[] movables;
+    public List<Cube> movables = new List<Cube>();
 
     // Start is called before the first frame update
     void Start()
@@ -22,5 +22,17 @@ public class GridZone : MonoBehaviour
 
     public void setSwipe(SwipeData _data){
         
+    }
+
+    public void addMovable(Cube _script){
+        movables.Add(_script);
+    }
+
+    public GameObject[] getGridObjects(){
+        return gridObjects;
+    }
+
+    public List<Cube> getMovableCubes(){
+        return movables;
     }
 }

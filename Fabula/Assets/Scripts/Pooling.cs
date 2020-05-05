@@ -17,7 +17,7 @@ public class Pooling : MonoBehaviour
         }
         else{
             GameObject _tmpWall = wallPool[0];
-            movableCubePool.RemoveAt(0);
+            wallPool.RemoveAt(0);
             _tmpWall.SetActive(true);
             return _tmpWall;
         }
