@@ -11,28 +11,16 @@ public class GridController : MonoBehaviour
     [SerializeField]
     public float offsetX = -7.4f, offsetY = -4f;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        activeGrid = gridZones[0];
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    public GridZone getActiveZone(){
-        return activeGrid;
-    }
-
     public float getLiningSpace(){
         return liningSpace;
     }
 
     public Vector2 getOffset(){
         return new Vector2(offsetX, offsetY);
+    }
+
+    public Vector2 calculateCoord(Vector2Int _gridCoord){
+        return new Vector2(_gridCoord.x * liningSpace + offsetX, _gridCoord.y * liningSpace + offsetY);
     }
 }
 

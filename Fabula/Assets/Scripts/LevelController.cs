@@ -13,27 +13,67 @@ public class LevelController : MonoBehaviour
 
     [Header("Level Datas")]
     public LevelData[] levelDataSet;
+    public StageController[] levelStageDatas;
+
+    private GridZone activeGrid;
+    private int stageIndex = 0;
+    private int levelNo = 1;
+
+    //Cube Movement
+    private float speed;
+    private int activeCoroutines = 0;
+    private bool isSwipeAvailable = true;
 
     // Start is called before the first frame update
     void Start()
-    {
+    {   
+        activeGrid = _GridController.gridZones[0];
         generateLevel(1, levelDataSet[0].dataSet);
     }
 
+    //Generates level
     public void generateLevel(int _lvlNo, Texture2D[] _lvlDatas){
         for (int i = 0; i < 4; i++)
         {
-           _LevelGenerator.GenerateLevel(_lvlDatas[i], _GridController.gridZones[i]); 
+            //gets level data for zone and generates level on that zone. Iterates for each zone
+           _LevelGenerator.GenerateLevel(_lvlDatas[i], _GridController.gridZones[i], this); 
+        }
+
+        //sets indicators of first stage of first zone as a start
+        _LevelGenerator.SetIndicators(levelStageDatas[levelNo - 1].GetCubeDatas(stageIndex, activeGrid), activeGrid);
+    }
+
+    //gets swipe data from swipemanager and decides what to do
+    public void setSwipe(SwipeData _data){
+        if(isSwipeAvailable){
+            isSwipeAvailable = false;
+            GridZone _zone = activeGrid;
+            List<Cube> _cubeGrid = new List<Cube>(_zone.getMovableCubes());
+
+            Cube[] _orderedCubes = orderCubeList(_data, _cubeGrid); //Order cubes
+
+            decideMovement(_data ,_orderedCubes);   //Calculate coordinate to move for each cube
         }
     }
 
-    public void setSwipe(SwipeData _data){
-        GridZone _zone = _GridController.getActiveZone();
-        List<Cube> _cubeGrid = new List<Cube>(_zone.getMovableCubes());
+    //After each cobe move to its final position, this method calls and checks that all cubes finish the movement
+    public void coroutineFinished(){
+        activeCoroutines --;
 
-        Cube[] _orderedCubes = orderCubeList(_data, _cubeGrid); //Order cubes
-
-        decideMovement(_data ,_orderedCubes);   //Calculate coordinate to move for each cube
+        //if all cubes finish its movement checks that is stage complete and enables swipes again
+        if(activeCoroutines == 0){
+            
+            if(checkCubeStatus(levelStageDatas[levelNo - 1].GetCubeDatas(stageIndex, activeGrid), activeGrid)){
+                Debug.Log("Complete Stage");
+                moveToNextStage(levelStageDatas[levelNo - 1].GetCubeDatas(stageIndex, activeGrid));
+            }
+            else
+            {
+                isSwipeAvailable = true;
+                Debug.Log("Not yet"); 
+            }
+            //TODO: Do check positions and give permission to swipe again
+        }
     }
 
     //Calculates the coordinates for each cube to move
@@ -59,8 +99,10 @@ public class LevelController : MonoBehaviour
             _coordinateOffset = new Vector2Int(0,1);
         }
 
+        activeCoroutines = _cubes.Length;
+
         foreach (Cube item in _cubes)
-        {
+        {   
             Vector2Int _coord = rayToDir(_rayDirection,item.transform) + _coordinateOffset;
             item.moveToCoord(new Vector2(
                 _coord.x * _GridController.getLiningSpace() + _GridController.getOffset().x, 
@@ -79,7 +121,6 @@ public class LevelController : MonoBehaviour
         if(hit.collider != null){
             _gridCoord = hit.collider.gameObject.GetComponent<Cube>().gridCoord;
         }
-
         return _gridCoord;
     }
 
@@ -108,22 +149,22 @@ public class LevelController : MonoBehaviour
 
         foreach (Cube item in _cubeList)
         {   
-            if(_dir == SwipeDirection.Left){
+            if(_dir == SwipeDirection.Right){
                 if(Mathf.Max(_tmpCube.gridCoord.x, item.gridCoord.x) == item.gridCoord.x){
                     _tmpCube = item;
                 }
             }
-            else if(_dir == SwipeDirection.Right){
+            else if(_dir == SwipeDirection.Left){
                 if(Mathf.Min(_tmpCube.gridCoord.x, item.gridCoord.x) == item.gridCoord.x){
                     _tmpCube = item;
                 }
             }
-            else if(_dir == SwipeDirection.Down){
+            else if(_dir == SwipeDirection.Up){
                 if(Mathf.Max(_tmpCube.gridCoord.y, item.gridCoord.y) == item.gridCoord.y){
                     _tmpCube = item;
                 }
             }
-            else if(_dir == SwipeDirection.Up){
+            else if(_dir == SwipeDirection.Down){
                 if(Mathf.Min(_tmpCube.gridCoord.y, item.gridCoord.y) == item.gridCoord.y){
                     _tmpCube = item;
                 }
@@ -131,5 +172,41 @@ public class LevelController : MonoBehaviour
 
         }
         return _tmpCube;
+    }
+
+    //Compare all cube coordinates by true positions of stage
+    //return true if all cube coordinates match by true positions which means stage completed
+    //else return false which means stage is not completed
+    private bool checkCubeStatus(StageCubeData _cubeData,GridZone _zone){
+        int _trueCount = 0;
+
+        foreach (Vector2Int _trueCoord in _cubeData.cubePlacements)
+        {
+            foreach (var _cube in _zone.getMovableCubes())
+            {
+                if(_trueCoord == _cube.gridCoord){
+                    _trueCount ++;
+                }
+            }
+        }
+
+        if(_trueCount == _cubeData.cubePlacements.Length){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    private void moveToNextStage(StageCubeData _cubeData){
+        if(stageIndex + 1 == _cubeData.cubePlacements.Length - 1){
+            Debug.Log("Move To Next Zone");
+            //TODO: move next zone
+        }
+        else{
+            stageIndex ++;
+            _LevelGenerator.SetIndicators(levelStageDatas[levelNo - 1].GetCubeDatas(stageIndex, activeGrid), activeGrid);
+            isSwipeAvailable = true;
+        }
     }
 }

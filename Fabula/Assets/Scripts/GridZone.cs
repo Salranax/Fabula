@@ -3,22 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GridZone : MonoBehaviour
-{
+{   
+    public int zoneIndex;
     private GameObject[] gridObjects;
     private GridType[] gridTypes;
     public List<Cube> movables = new List<Cube>();
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public List<GameObject> indicators = new List<GameObject>();
 
     public void setSwipe(SwipeData _data){
         

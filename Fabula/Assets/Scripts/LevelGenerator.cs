@@ -11,18 +11,40 @@ public class LevelGenerator : MonoBehaviour
     public float liningSpace;
     [SerializeField]
     public float offsetX, offsetY;
+    public delegate void MovementCallback();
 
-    public void GenerateLevel(Texture2D _mapdata, GridZone _zone){
+    public void GenerateLevel(Texture2D _mapdata, GridZone _zone, LevelController _levelControllerDependency){
         offsetX = _GridController.getOffset().x;
         offsetY = _GridController.getOffset().y;
         liningSpace = _GridController.getLiningSpace();
+
         
         for (int x = 0; x < _mapdata.width; x++)
         {
             for (int y = 0; y < _mapdata.height; y++)
             {
-                GenerateTile(x,y, _mapdata, _zone);
+                GenerateTile(x,y, _mapdata, _zone, _levelControllerDependency);
             }
+        }
+    }
+
+    public void SetIndicators(StageCubeData _cubeData,GridZone _zone){
+        if(_zone.indicators.Count == 0){
+            generateIndicators(_cubeData, _zone);
+        }
+
+        for (int i = 0; i < _cubeData.cubePlacements.Length; i++)
+        {
+            _zone.indicators[i].transform.localPosition = _GridController.calculateCoord(_cubeData.cubePlacements[i]);
+        }
+    }
+
+    private void generateIndicators(StageCubeData _cubeData, GridZone _zone){
+        foreach (Vector2Int _coord in _cubeData.cubePlacements)
+        {
+            GameObject _tmp = _pool.getIndicator();
+            _zone.indicators.Add(_tmp);
+            _tmp.transform.SetParent(_zone.transform);
         }
     }
 
@@ -30,7 +52,7 @@ public class LevelGenerator : MonoBehaviour
     //0 is WALL
     //1 is MOVABLE CUBE
 
-    void GenerateTile(int x, int y, Texture2D _mapdata, GridZone _zone){
+    void GenerateTile(int x, int y, Texture2D _mapdata, GridZone _zone, LevelController _levelControllerDependency){
         Color32 pixelColor = _mapdata.GetPixel(x,y);
 
         if(colorMappings[0].color.Equals(pixelColor)){
@@ -49,10 +71,9 @@ public class LevelGenerator : MonoBehaviour
             _tmpMovable.transform.localPosition = new Vector2(x * liningSpace + offsetX, y * liningSpace + offsetY);
 
             Cube _cubeScript = _tmpMovable.GetComponent<Cube>();
-            _cubeScript.gridCoord = new Vector2Int(x,y);
+            _cubeScript.cubeSetup(_levelControllerDependency, new Vector2Int(x,y));
             _zone.addMovable(_cubeScript);
         }
-
     }
 
 }

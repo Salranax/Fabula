@@ -21,7 +21,7 @@ public class Testing : MonoBehaviour
     public void testCubeSort(){
         SwipeData swipeData = new SwipeData()
         {
-            Direction = SwipeDirection.Up,
+            Direction = SwipeDirection.Left,
             StartPosition = Vector3.zero,
             EndPosition = Vector3.zero
         };
