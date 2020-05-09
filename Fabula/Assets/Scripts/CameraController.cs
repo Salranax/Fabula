@@ -7,6 +7,8 @@ public class CameraController : MonoBehaviour
 {
     [SerializeField]
     public CinemachineVirtualCamera[] cameras = new CinemachineVirtualCamera[4];
+    private int activePriority = 10;
+    private int passivePriority = 9;
 
     // Start is called before the first frame update
     void Start()
@@ -21,6 +23,11 @@ public class CameraController : MonoBehaviour
     }
 
     public void moveToZoneByIndex(int _index){
+        foreach (CinemachineVirtualCamera _cam in cameras)
+        {
+            _cam.Priority = passivePriority;
+        }
 
+        cameras[_index].Priority = activePriority;
     }
 }

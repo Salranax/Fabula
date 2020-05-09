@@ -29,10 +29,13 @@ public class LevelGenerator : MonoBehaviour
     }
 
     public void SetIndicators(StageCubeData _cubeData,GridZone _zone){
-        if(_zone.indicators.Count == 0){
-            generateIndicators(_cubeData, _zone);
+        foreach (GameObject item in _zone.indicators)
+        {
+            _pool.retireIndicator(item);
         }
 
+        generateIndicators(_cubeData, _zone);
+        
         for (int i = 0; i < _cubeData.cubePlacements.Length; i++)
         {
             _zone.indicators[i].transform.localPosition = _GridController.calculateCoord(_cubeData.cubePlacements[i]);
@@ -45,12 +48,14 @@ public class LevelGenerator : MonoBehaviour
             GameObject _tmp = _pool.getIndicator();
             _zone.indicators.Add(_tmp);
             _tmp.transform.SetParent(_zone.transform);
+            _tmp.transform.rotation = Quaternion.identity;
         }
     }
 
     //Color Codes
     //0 is WALL
     //1 is MOVABLE CUBE
+    //2 is DOOR
 
     void GenerateTile(int x, int y, Texture2D _mapdata, GridZone _zone, LevelController _levelControllerDependency){
         Color32 pixelColor = _mapdata.GetPixel(x,y);
@@ -63,8 +68,9 @@ public class LevelGenerator : MonoBehaviour
 
             Cube _cubeScript = _tmpWall.GetComponent<Cube>();
             _cubeScript.gridCoord = new Vector2Int(x,y);
+            _tmpWall.transform.rotation = Quaternion.identity;
         }
-        if(colorMappings[1].color.Equals(pixelColor)){
+        else if(colorMappings[1].color.Equals(pixelColor)){
             GameObject _tmpMovable = _pool.getMovableCube();
 
             _tmpMovable.transform.SetParent(_zone.transform);
@@ -73,6 +79,18 @@ public class LevelGenerator : MonoBehaviour
             Cube _cubeScript = _tmpMovable.GetComponent<Cube>();
             _cubeScript.cubeSetup(_levelControllerDependency, new Vector2Int(x,y));
             _zone.addMovable(_cubeScript);
+            _cubeScript.transform.rotation = Quaternion.identity;
+        }
+        else if(colorMappings[2].color.Equals(pixelColor)){
+            GameObject _tmpMovable = _pool.getMovableCube();
+
+            _tmpMovable.transform.SetParent(_zone.transform);
+            _tmpMovable.transform.localPosition = new Vector2(x * liningSpace + offsetX, y * liningSpace + offsetY);
+
+            Cube _cubeScript = _tmpMovable.GetComponent<Cube>();
+            _cubeScript.cubeSetup(_levelControllerDependency, new Vector2Int(x,y));
+            //_zone.addMovable(_cubeScript);
+            _cubeScript.transform.rotation = Quaternion.identity;
         }
     }
 

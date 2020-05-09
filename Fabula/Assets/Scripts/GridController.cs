@@ -5,7 +5,6 @@ using UnityEngine;
 public class GridController : MonoBehaviour
 {
     public GridZone[] gridZones = new GridZone[4];
-    private GridZone activeGrid;
     [SerializeField]
     public float liningSpace = 1.56f;
     [SerializeField]

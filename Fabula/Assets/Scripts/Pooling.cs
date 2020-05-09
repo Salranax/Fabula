@@ -50,4 +50,10 @@ public class Pooling : MonoBehaviour
             return _tmpIndicator;
         }
     }
+
+    public void retireIndicator(GameObject _ind){
+        _ind.SetActive(false);
+        _ind.transform.SetParent(this.transform);
+        indicatorPool.Add(_ind);
+    }
 }

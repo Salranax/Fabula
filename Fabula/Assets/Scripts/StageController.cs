@@ -12,6 +12,16 @@ public class StageController : MonoBehaviour
     public StageCubeData[] stageDatas3;
     [Header("Datas For Zone 4")]
     public StageCubeData[] stageDatas4;
+    [Header("Movement Sequences")]
+    [Header("Sequences For Zone 1")]
+    public MovementSequence[] stage1Sequence;
+    [Header("Sequences For Zone 2")]
+    public MovementSequence[] stage2Sequence;
+    [Header("Sequences For Zone 3")]
+    public MovementSequence[] stage3Sequence;
+    [Header("Sequences For Zone 4")]
+    public MovementSequence[] stage4Sequence;
+
 
     public StageCubeData GetCubeDatas(int _stageIndex, GridZone _zone){
         if(_zone.zoneIndex == 0){
@@ -28,6 +38,24 @@ public class StageController : MonoBehaviour
         }
         else{
             return null;
+        }
+    }
+
+    public int GetStageLength(GridZone _zone){
+        if(_zone.zoneIndex == 0){
+            return stageDatas1.Length;
+        }
+        else if(_zone.zoneIndex == 1){
+            return stageDatas2.Length;
+        }
+        else if(_zone.zoneIndex == 2){
+            return stageDatas3.Length;
+        }
+        else if(_zone.zoneIndex == 3){
+            return stageDatas4.Length;
+        }
+        else{
+            return 0;
         }
     }
 }

@@ -7,6 +7,7 @@ public class LevelController : MonoBehaviour
     [Header("Dependencies")]
     public GridController _GridController;
     public LevelGenerator _LevelGenerator;
+    public CameraController _CameraController;
 
     [Header("Setup")]
     public LayerMask cubeMask;
@@ -16,6 +17,7 @@ public class LevelController : MonoBehaviour
     public StageController[] levelStageDatas;
 
     private GridZone activeGrid;
+    private int zoneIndex;
     private int stageIndex = 0;
     private int levelNo = 1;
 
@@ -27,7 +29,8 @@ public class LevelController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {   
-        activeGrid = _GridController.gridZones[0];
+        zoneIndex = 0;
+        activeGrid = _GridController.gridZones[zoneIndex];
         generateLevel(1, levelDataSet[0].dataSet);
     }
 
@@ -46,7 +49,7 @@ public class LevelController : MonoBehaviour
     //gets swipe data from swipemanager and decides what to do
     public void setSwipe(SwipeData _data){
         if(isSwipeAvailable){
-            isSwipeAvailable = false;
+            deactivateSwipe();
             GridZone _zone = activeGrid;
             List<Cube> _cubeGrid = new List<Cube>(_zone.getMovableCubes());
 
@@ -64,38 +67,80 @@ public class LevelController : MonoBehaviour
         if(activeCoroutines == 0){
             
             if(checkCubeStatus(levelStageDatas[levelNo - 1].GetCubeDatas(stageIndex, activeGrid), activeGrid)){
-                Debug.Log("Complete Stage");
-                moveToNextStage(levelStageDatas[levelNo - 1].GetCubeDatas(stageIndex, activeGrid));
+                checkProgress(levelStageDatas[levelNo - 1].GetStageLength(activeGrid));
             }
             else
             {
-                isSwipeAvailable = true;
-                Debug.Log("Not yet"); 
+                activateSwipe();
             }
-            //TODO: Do check positions and give permission to swipe again
         }
     }
 
     //Calculates the coordinates for each cube to move
     //Then move them to that coordinate
     private void decideMovement(SwipeData _data, Cube[] _cubes){
-        Vector2 _rayDirection;
+        Vector2 _rayDirection = Vector2.left;
         Vector2Int _coordinateOffset;
 
         if(_data.Direction == SwipeDirection.Left){
-            _rayDirection = Vector2.left;
+            if(zoneIndex == 0){
+                _rayDirection = Vector2.left;   
+            }
+            else if(zoneIndex == 1){
+                _rayDirection = Vector2.down;
+            }
+            else if(zoneIndex == 2){
+                _rayDirection = Vector2.right;
+            }
+            else if(zoneIndex == 3){
+                _rayDirection = Vector2.up;
+            }
             _coordinateOffset = new Vector2Int(1,0);
         }
         else if(_data.Direction == SwipeDirection.Right){
-            _rayDirection = Vector2.right;
+            if(zoneIndex == 0){
+                _rayDirection = Vector2.right;
+                
+            }
+            else if(zoneIndex == 1){
+                _rayDirection = Vector2.up;
+            }
+            else if(zoneIndex == 2){
+                _rayDirection = Vector2.left;
+            }
+            else if(zoneIndex == 3){
+                _rayDirection = Vector2.down;
+            }
             _coordinateOffset = new Vector2Int(-1,0);
         }
         else if(_data.Direction == SwipeDirection.Up){
-            _rayDirection = Vector2.up;
+            if(zoneIndex == 0){
+                _rayDirection = Vector2.up;
+            }
+            else if(zoneIndex == 1){
+                _rayDirection = Vector2.left;
+            }
+            else if(zoneIndex == 2){
+                _rayDirection = Vector2.down;
+            }
+            else if(zoneIndex == 3){
+                _rayDirection = Vector2.right;
+            }
             _coordinateOffset = new Vector2Int(0,-1);
         }
         else{
-            _rayDirection = Vector2.down;
+            if(zoneIndex == 0){
+                _rayDirection = Vector2.down;
+            }
+            else if(zoneIndex == 1){
+                _rayDirection = Vector2.right;
+            }
+            else if(zoneIndex == 2){
+                _rayDirection = Vector2.up;
+            }
+            else if(zoneIndex == 3){
+                _rayDirection = Vector2.left;
+            }
             _coordinateOffset = new Vector2Int(0,1);
         }
 
@@ -198,15 +243,32 @@ public class LevelController : MonoBehaviour
         }
     }
 
-    private void moveToNextStage(StageCubeData _cubeData){
-        if(stageIndex + 1 == _cubeData.cubePlacements.Length - 1){
-            Debug.Log("Move To Next Zone");
-            //TODO: move next zone
+    private void checkProgress(int _dataLength){
+        Debug.Log(stageIndex + " / " + _dataLength);
+        if(stageIndex + 1 == _dataLength){
+            moveToNextZone();
         }
         else{
             stageIndex ++;
             _LevelGenerator.SetIndicators(levelStageDatas[levelNo - 1].GetCubeDatas(stageIndex, activeGrid), activeGrid);
-            isSwipeAvailable = true;
+            activateSwipe();
         }
+    }
+
+    private void moveToNextZone(){
+        zoneIndex ++;
+        stageIndex = 0;
+        _CameraController.moveToZoneByIndex(zoneIndex);
+        activeGrid = _GridController.gridZones[zoneIndex];
+        _LevelGenerator.SetIndicators(levelStageDatas[levelNo - 1].GetCubeDatas(stageIndex, activeGrid), activeGrid);
+        Invoke("activateSwipe", 2.1f);
+    }
+
+    private void activateSwipe(){
+        isSwipeAvailable = true;
+    }
+
+    private void deactivateSwipe(){
+        isSwipeAvailable = false;
     }
 }
