@@ -6,6 +6,7 @@ public class Cube : MonoBehaviour
 {
     [SerializeField]
     public LevelController _LevelController;
+    public CubeSkin skinController;
     public Vector2Int gridCoord;
     private float speed = 0.4f;
 
@@ -22,6 +23,10 @@ public class Cube : MonoBehaviour
         else{
             _LevelController.coroutineFinished();
         }
+    }
+
+    public void setSkin(Sprite _skin){
+        skinController.setSkin(_skin);
     }
 
     IEnumerator moveCoroutine(Vector2 _finalPos){

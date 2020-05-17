@@ -58,4 +58,22 @@ public class StageController : MonoBehaviour
             return 0;
         }
     }
+
+    public MovementSequence getSequence(int _index, GridZone _zone){
+        if(_zone.zoneIndex == 0){
+            return stage1Sequence[_index];
+        }
+        else if(_zone.zoneIndex == 1){
+            return stage2Sequence[_index];
+        }
+        else if(_zone.zoneIndex == 2){
+            return stage3Sequence[_index];
+        }
+        else if(_zone.zoneIndex == 3){
+            return stage4Sequence[_index];
+        }
+        else{
+            return null;
+        }
+    }
 }

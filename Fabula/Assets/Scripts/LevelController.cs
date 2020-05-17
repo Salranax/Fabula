@@ -5,9 +5,11 @@ using UnityEngine;
 public class LevelController : MonoBehaviour
 {
     [Header("Dependencies")]
+    public GameManager _GameManager;
     public GridController _GridController;
     public LevelGenerator _LevelGenerator;
     public CameraController _CameraController;
+    public CharacterSequenceController _SequenceController;
 
     [Header("Setup")]
     public LayerMask cubeMask;
@@ -19,12 +21,16 @@ public class LevelController : MonoBehaviour
     private GridZone activeGrid;
     private int zoneIndex;
     private int stageIndex = 0;
+    private int sequenceIndex = 0;
     private int levelNo = 1;
 
     //Cube Movement
     private float speed;
     private int activeCoroutines = 0;
     private bool isSwipeAvailable = true;
+    private SequenceCallback NextStageCallBack;
+    private SequenceCallback NextZoneCallback;
+    private SequenceCallback NextZoneEntranceCallback;
 
     // Start is called before the first frame update
     void Start()
@@ -32,6 +38,10 @@ public class LevelController : MonoBehaviour
         zoneIndex = 0;
         activeGrid = _GridController.gridZones[zoneIndex];
         generateLevel(1, levelDataSet[0].dataSet);
+
+        NextStageCallBack += nextStage;
+        NextZoneCallback += moveToNextZone;
+        NextZoneEntranceCallback += activateSwipe;
     }
 
     //Generates level
@@ -244,24 +254,39 @@ public class LevelController : MonoBehaviour
     }
 
     private void checkProgress(int _dataLength){
-        Debug.Log(stageIndex + " / " + _dataLength);
-        if(stageIndex + 1 == _dataLength){
-            moveToNextZone();
+        if(stageIndex + 1 == _dataLength){ 
+            _SequenceController.processSequence(levelStageDatas[levelNo - 1].getSequence(sequenceIndex, activeGrid), NextZoneCallback);
         }
         else{
-            stageIndex ++;
-            _LevelGenerator.SetIndicators(levelStageDatas[levelNo - 1].GetCubeDatas(stageIndex, activeGrid), activeGrid);
-            activateSwipe();
+            _SequenceController.processSequence(levelStageDatas[levelNo - 1].getSequence(sequenceIndex, activeGrid), NextStageCallBack);
         }
     }
 
-    private void moveToNextZone(){
-        zoneIndex ++;
-        stageIndex = 0;
-        _CameraController.moveToZoneByIndex(zoneIndex);
-        activeGrid = _GridController.gridZones[zoneIndex];
+    private void nextStage(){
+        stageIndex ++;
         _LevelGenerator.SetIndicators(levelStageDatas[levelNo - 1].GetCubeDatas(stageIndex, activeGrid), activeGrid);
-        Invoke("activateSwipe", 2.1f);
+        activateSwipe();
+    }
+
+    private void moveToNextZone(){
+        if(zoneIndex == 3){
+            _GameManager.winCondition();
+        }
+        else{
+            zoneIndex ++;
+            stageIndex = 0;
+            _CameraController.moveToZoneByIndex(zoneIndex);
+            activeGrid = _GridController.gridZones[zoneIndex];
+            _LevelGenerator.SetIndicators(levelStageDatas[levelNo - 1].GetCubeDatas(stageIndex, activeGrid), activeGrid);
+            sequenceIndex = 0;
+            Invoke("zoneEntrenceSequence", 2f);
+        }
+    }
+
+    private void zoneEntrenceSequence(){
+        _SequenceController.setCharacterToZone(activeGrid, levelStageDatas[levelNo - 1].getSequence(sequenceIndex, activeGrid).sequences[0]);
+        _SequenceController.processSequence(levelStageDatas[levelNo - 1].getSequence(sequenceIndex, activeGrid), NextZoneEntranceCallback);
+        sequenceIndex ++;
     }
 
     private void activateSwipe(){
@@ -270,5 +295,14 @@ public class LevelController : MonoBehaviour
 
     private void deactivateSwipe(){
         isSwipeAvailable = false;
+    }
+
+    //TEST PURPOSES
+    public void skipZone(){
+        moveToNextZone();
+    }
+
+    public void skipStage(){
+        nextStage();
     }
 }

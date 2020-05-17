@@ -4,15 +4,9 @@ using UnityEngine;
 
 public class CubeSkin : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public SpriteRenderer skin;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+    public void setSkin(Sprite _skin){
+        skin.sprite = _skin;
     }
 }

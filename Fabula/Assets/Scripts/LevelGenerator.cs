@@ -11,6 +11,8 @@ public class LevelGenerator : MonoBehaviour
     public float liningSpace;
     [SerializeField]
     public float offsetX, offsetY;
+    [SerializeField]
+    public Sprite[] wallSprites;
     public delegate void MovementCallback();
 
     public void GenerateLevel(Texture2D _mapdata, GridZone _zone, LevelController _levelControllerDependency){
@@ -68,6 +70,7 @@ public class LevelGenerator : MonoBehaviour
 
             Cube _cubeScript = _tmpWall.GetComponent<Cube>();
             _cubeScript.gridCoord = new Vector2Int(x,y);
+            _cubeScript.setSkin(wallSprites[Random.Range(0,4)]);
             _tmpWall.transform.rotation = Quaternion.identity;
         }
         else if(colorMappings[1].color.Equals(pixelColor)){
@@ -82,14 +85,13 @@ public class LevelGenerator : MonoBehaviour
             _cubeScript.transform.rotation = Quaternion.identity;
         }
         else if(colorMappings[2].color.Equals(pixelColor)){
-            GameObject _tmpMovable = _pool.getMovableCube();
+            GameObject _tmpGate = Instantiate(colorMappings[2].prefab);
 
-            _tmpMovable.transform.SetParent(_zone.transform);
-            _tmpMovable.transform.localPosition = new Vector2(x * liningSpace + offsetX, y * liningSpace + offsetY);
+            _tmpGate.transform.SetParent(_zone.transform);
+            _tmpGate.transform.localPosition = new Vector2(x * liningSpace + offsetX, y * liningSpace + offsetY);
 
-            Cube _cubeScript = _tmpMovable.GetComponent<Cube>();
+            Cube _cubeScript = _tmpGate.GetComponent<Cube>();
             _cubeScript.cubeSetup(_levelControllerDependency, new Vector2Int(x,y));
-            //_zone.addMovable(_cubeScript);
             _cubeScript.transform.rotation = Quaternion.identity;
         }
     }
